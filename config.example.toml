@@ -1,0 +1,52 @@
+# memoryclip — cấu hình mẫu
+#
+# Sao chép file này thành `config.toml` trong thư mục dữ liệu
+# (xem `memoryclip stats` để biết đường dẫn, hoặc dùng --data-dir).
+#
+# Mọi tuỳ chọn đều có giá trị mặc định, nên file này có thể để trống.
+
+# Ghi đè thư mục dữ liệu. Bỏ trống = thư mục mặc định của OS
+# (Linux ~/.local/share/memoryclip, macOS ~/Library/Application Support/memoryclip,
+#  Windows %APPDATA%\memoryclip)
+# data_dir = "~/.local/share/memoryclip"
+
+[limits]
+# Clip lớn hơn sẽ bị bỏ qua.
+max_clip_bytes = 262144
+# Số ký tự giữ trong cột preview.
+preview_chars = 200
+# Số từ khoá lưu cho mỗi clip.
+keywords = 20
+# Số dòng mỗi trang khi liệt kê.
+page_size = 20
+
+[retention]
+# Xoá clip chưa ghim sau N ngày. 0 = không xoá theo tuổi.
+max_age_days = 90
+# Tổng dung lượng clip chưa ghim tối đa. 0 = không giới hạn.
+max_total_bytes = 524288000
+
+[secret]
+# Tắt = không dò, không mã hoá, tất cả lưu thuần.
+enabled = true
+
+# Rule nào được bật. Rỗng = bật tất cả.
+# Tên hợp lệ:
+#   private_key      khối -----BEGIN ... PRIVATE KEY-----
+#   jwt              token JWT (eyJ...)
+#   aws_access_key   AKIA...
+#   github_token     ghp_..., github_pat_...
+#   slack_token      xoxb-/xoxp-...
+#   google_api_key   AIza...
+#   stripe_key       sk_live_/rk_live_...
+#   openai_key       sk-...
+#   bearer_token     Authorization: Bearer ...
+#   generic_api_key  "api key: ...", "mật khẩu: ...", "token = ..."
+#   high_entropy     chuỗi dài, entropy cao, pha nhiều nhóm ký tự
+# rules = []
+
+[daemon]
+# Chu kỳ thăm dò clipboard, tính bằng mili-giây (nhỏ nhất 50).
+poll_interval_ms = 400
+# Bỏ qua nội dung chỉ có khoảng trắng.
+skip_blank = true
