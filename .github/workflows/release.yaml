@@ -1,0 +1,93 @@
+name: Release Memoryclip
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger khi push tag có dạng v1.0.0, v0.1.0...
+
+permissions:
+  contents: write
+
+jobs:
+  # 1. Build file .deb cho Linux (Ubuntu/Debian)
+  build-deb:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies (Wayland / X11 / SQLite)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb1-dev libx11-dev libwayland-dev libsqlite3-dev
+
+      - name: Install cargo-deb
+        run: cargo install cargo-deb
+
+      - name: Build .deb package
+        run: cargo deb
+
+      - name: Upload .deb to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/debian/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 2. Build file binary nén (.tar.gz / .zip) đa nền tảng (Linux, macOS, Windows)
+  build-binaries:
+    name: Build Binary (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive_name: memoryclip-linux-amd64.tar.gz
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive_name: memoryclip-macos-x86.tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive_name: memoryclip-macos-arm64.tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive_name: memoryclip-windows-x64.zip
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux system dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb1-dev libx11-dev libwayland-dev libsqlite3-dev
+
+      - name: Build Binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package Binary (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          tar -czvf ${{ matrix.archive_name }} -C target/${{ matrix.target }}/release memoryclip
+
+      - name: Package Binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          Compress-Archive -Path target/${{ matrix.target }}/release/memoryclip.exe -DestinationPath ${{ matrix.archive_name }}
+
+      - name: Upload Binary to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.archive_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
