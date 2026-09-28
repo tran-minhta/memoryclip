@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*' # Trigger khi push tag có dạng v1.0.0, v0.1.0...
+      - 'V*'
 
 permissions:
   contents: write
