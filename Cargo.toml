@@ -26,3 +26,13 @@ toml = "1.1.6"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 zeroize = "1.9.0"
+
+[package.metadata.deb]
+maintainer = "Tran Minh Ta <your-email@example.com>"
+copyright = "2026, Tran Minh Ta"
+extended-description = "Tự động theo dõi clipboard và quản lý lịch sử với SQLite FTS5"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/memoryclip", "usr/bin/memoryclip", "755"],
+]
